@@ -1,0 +1,158 @@
+{
+  "onboardSaveValidation": {
+    "date": "2026-09-12",
+    "appSHA256": "317d6592984ddae74711f2e1f8f5e63101213b546413275b66c6041111595347",
+    "test": "Scroll Lock to F13, followed by Undo last save, through the actual app UI",
+    "saveVerifiedAfterUSBDriverReconnect": true,
+    "onlyScrollLockChanged": true,
+    "undoRestoredEntireStartingSnapshot": true,
+    "macroListUnchanged": true,
+    "filteredSelectionVerified": true,
+    "emptySearchDisablesSaving": true,
+    "macroKeyEditingDisabled": true,
+    "thirdBottomLeftKeyShowsCommand": true,
+    "physicalPowerCycleTested": false,
+    "mappingCountBeforeAndAfter": 41,
+    "remainingUnrecognizedEntries": 19
+  },
+  "clickableLayoutValidation": {
+    "date": "2026-09-12",
+    "appSHA256": "e45f9757cad67f1e255487be0b4957011ec307c974f40792273f7ed6d74f49c9",
+    "keyboardLayoutMatchesManual": true,
+    "geometryAndCatalogCoverageTestsPassed": true,
+    "clickSelectionVerified": true,
+    "filteredSelectionVerified": true,
+    "noMatchesDisablesEditing": true,
+    "macroKeyEditingDisabled": true,
+    "thirdBottomLeftKeyShowsCommand": true,
+    "changingSelectionClearsUnsavedDestination": true,
+    "hardwareWritesPerformed": false,
+    "writerBinaryUnchangedFromPreviousBuild": true
+  },
+  "uiUxAuditValidation": {
+    "date": "2026-09-12",
+    "appSHA256": "59079db5eadd2f43fe4a4b35bc538e3290cc14035823d9879b2692f7b39d79ba",
+    "writerSHA256": "5f14c1c21e3690a352bc1e131182ff55d107440a1f74f7487b81288663e5727d",
+    "liveUiVerified": [
+      "mapping dialog search filters Option to left and right",
+      "no search results cannot choose a stale mapping",
+      "selected right Option produces an explicit unsaved change summary",
+      "macro key cannot be edited while another key has a draft",
+      "switching keys and reloading preserve the draft",
+      "quit offers Keep editing and Discard and close",
+      "Discard clears the test draft without saving"
+    ],
+    "automatedChecksPassed": true,
+    "hardwareWritesPerformed": false,
+    "screenReaderAuditPerformed": false,
+    "contrastComplianceMeasured": false,
+    "fullOutput": "audit/REPORT.md"
+  },
+  "lightGrayRefinement": {
+    "appSHA256": "7c2decfb7bf0d62e23c2c9f29da17bc0e1c530c64b47dfa992292ef6c9ae77fd",
+    "lightCanvasHex": "#F7F7F8",
+    "removedRedundantPrompts": true,
+    "heartReminderBesideStatus": true,
+    "buildAndChecksPassed": true,
+    "screenshot": "audit/07-light-gray.png",
+    "hardwareWritesPerformed": false
+  },
+  "macroImplementation": {
+    "date": "2026-09-12",
+    "appSHA256": "e7239d1521fe95cc0e94722e2483bff51d4a390f633c1c1c052736915bbb608b",
+    "macroWriterSHA256": "01fdb8732fab42d2280abc326c9b283ab22212d9defdd7ba3ce26e109b8eeb64",
+    "buildAndAutomatedChecksPassed": true,
+    "signatureVerified": true,
+    "liveUiVerified": [
+      "existing screenshot macro decoded to all 10 steps before tests",
+      "zero repeats disables Save",
+      "Cancel discards unsaved edits",
+      "shortcut insertion generates balanced press/release steps",
+      "nested key picker searches and selects F14",
+      "modifier shortcut inserts Command down/up",
+      "pause update changes 30 ms to 100 ms",
+      "move up reorders the selected step",
+      "remove step removes only selected event",
+      "current malformed-table guard disables macro Save and Remove"
+    ],
+    "guardRejectedHistoricalRequestBeforeUSBAccess": true,
+    "hardwareMacroSaveVerified": false,
+    "hardwareMacroUndoVerified": false,
+    "physicalPlaybackVerified": false,
+    "hardwareTests": [
+      {
+        "test": "Scroll Lock macro name F13 test through app",
+        "result": "Name command returned 54e407; no sequence or mapping commands sent.",
+        "beforeBackup": "~/Library/Application Support/8BitDo 85HA Editor/Backups/1F25B5FC-9413-4990-BACD-62766EFE3D45-before.json",
+        "firstReadbackIdenticalToBaseline": true
+      },
+      {
+        "test": "Reference space encoding via scoped helper",
+        "result": "Name command returned 54e407; no sequence or mapping commands sent. Subsequent macro list and screenshot definition were inconsistent.",
+        "evidence": "../../work/8bitdo/macro-name-encoding-test/"
+      }
+    ],
+    "preTestBaseline": "../../work/8bitdo/macro-implementation-before.json",
+    "currentStatus": "Recovery complete: normal mappings and corrected Command-Shift-4 screenshot macro saved and independently verified; user confirmed normal keys and screenshot selection. General macro editing/removal/Undo remain paused because individual replacement failed readback.",
+    "screenshots": [
+      "audit/08-macro-editor.png",
+      "audit/09-macro-save-guard.png"
+    ],
+    "postReconnect": {
+      "date": "2026-09-12",
+      "physicalReconnectConfirmedByUser": true,
+      "profileUnchanged": true,
+      "all41MappingRecordsUnchanged": true,
+      "macroListUnchanged": false,
+      "screenshotRestored": false,
+      "scrollLockTestEntryRemoved": false,
+      "hardwareWritesAfterReconnect": false,
+      "beforeMacroListHex": "548246220014740aff1a7508ff1a00000000000000000000000000000000000000",
+      "afterMacroListHex": "54824614ff224710ff10741a000a751a0008000000000000000000000000000000",
+      "beforeSnapshot": "../../work/8bitdo/macro-implementation-before.json",
+      "afterSnapshot": "../../work/8bitdo/macro-after-reconnect-full.json"
+    },
+    "officialProtocolInspection": "audit/MACROS.md",
+    "removalCountCorrectedOffline": true,
+    "removalCountUnitTestsPassed": true,
+    "recoveryInvestigation20260913": {
+      "freshSnapshotMatchesPostReconnect": true,
+      "hardwareWritesPerformed": false,
+      "officialKeyboardProfileDeletePathIdentified": true,
+      "plan": "../../work/8bitdo/recovery-sep13/plan.json",
+      "status": "Awaiting explicit approval for profile erasure; no recovery executed"
+    },
+    "recovery20260913": {
+      "resetAcknowledged": true,
+      "emptyStateVerifiedBeforeRebuild": true,
+      "restoredMappingRecords": 12,
+      "independentMappingReadbackVerified": true,
+      "extraMappingEntriesRemaining": 0,
+      "unreadableMacrosRemaining": 0,
+      "screenshotRestoredExactly": true,
+      "physicalPowerCycleVerified": true,
+      "physicalPlaybackVerified": false,
+      "macroEditingAndRemovalVerified": false,
+      "normalKeyPlaybackConfirmedByUser": true,
+      "originalMacroPlayback": "User reported Option-Shift-4 produced the character \u203a; corrected target to Command-Shift-4."
+    },
+    "correctedScreenshotRecovery": {
+      "individualReplacementAcknowledgedButFailedReadback": true,
+      "independentReadShowedMacroMissing": true,
+      "normalMappingsPreservedThroughout": true,
+      "profileRebuiltUsingApprovedRecovery": true,
+      "commandShift4SavedAndIndependentlyVerified": true,
+      "finalEvidence": "../../work/8bitdo/recovery-corrected-screenshot/after-screenshot.json",
+      "physicalPlaybackVerified": true,
+      "allAppMacroMutationsBlockedBeforeUSB": true
+    }
+  },
+  "repositoryBuild": {
+    "date": "2026-09-13",
+    "cleanBuildFromBundledLibusbPassed": true,
+    "automatedChecksPassed": true,
+    "codeSignatureVerified": true,
+    "requiresOriginalWorkspace": false,
+    "hardwareWritesPerformed": false
+  }
+}

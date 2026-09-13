@@ -1,0 +1,220 @@
+{
+  "mappings": [
+    {
+      "data": "DHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 62,
+      "type": 12
+    },
+    {
+      "data": "DG8AAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 63,
+      "type": 12
+    },
+    {
+      "data": "DLYAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 64,
+      "type": 12
+    },
+    {
+      "data": "DLUAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 65,
+      "type": 12
+    },
+    {
+      "data": "DM0AAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 66,
+      "type": 12
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 83,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 84,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 85,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 86,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 87,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 88,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 89,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 90,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 91,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 92,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 93,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 94,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 95,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 96,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 97,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 98,
+      "type": 8
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 99,
+      "type": 8
+    },
+    {
+      "data": "B+AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 100,
+      "type": 7
+    },
+    {
+      "data": "B+EAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 101,
+      "type": 7
+    },
+    {
+      "data": "B+MAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 102,
+      "type": 7
+    },
+    {
+      "data": "B+IAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 103,
+      "type": 7
+    },
+    {
+      "data": "B+QAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 104,
+      "type": 7
+    },
+    {
+      "data": "B+UAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 105,
+      "type": 7
+    },
+    {
+      "data": "B+cAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 106,
+      "type": 7
+    },
+    {
+      "data": "CAgICAgICAgAAAAAAAAAAAAAAAAAAAAA",
+      "key": 107,
+      "type": 8
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 108,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 109,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 110,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 111,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 112,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 113,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 114,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 115,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 116,
+      "type": 7
+    },
+    {
+      "data": "BwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 117,
+      "type": 7
+    },
+    {
+      "data": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "key": 118,
+      "type": 8
+    }
+  ],
+  "productID": 20992,
+  "profile": "work",
+  "vendorID": 11720,
+  "macroPackets": [
+    "VIJGIgAUdAr/GnUI/xoAAAAAAAAAAAAAAAAAAAAAAAAA"
+  ],
+  "macroKeys": [
+    70,
+    116,
+    117
+  ]
+}
