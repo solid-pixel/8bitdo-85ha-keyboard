@@ -6,9 +6,11 @@
 - (void)openMacro:(id)sender{
  (void)sender;if(!self.macroButton.enabled)return;self.macroKey=self.selected;
  if(!self.macroWindow){
-  self.macroWindow=[[NSPanel alloc]initWithContentRect:NSMakeRect(0,0,780,680) styleMask:NSWindowStyleMaskTitled backing:NSBackingStoreBuffered defer:NO];self.macroWindow.title=@"Edit macro";
+  BOOL readOnly=!macro_writes_enabled();
+  self.macroWindow=[[NSPanel alloc]initWithContentRect:NSMakeRect(0,0,780,readOnly?490:680) styleMask:NSWindowStyleMaskTitled backing:NSBackingStoreBuffered defer:NO];self.macroWindow.title=readOnly?@"View macro":@"Edit macro";
   self.macroName=[NSTextField new];self.macroName.placeholderString=@"Macro name";self.macroName.delegate=self;
   self.macroRepeats=[NSTextField new];self.macroRepeats.stringValue=@"1";self.macroRepeats.delegate=self;
+  if(readOnly)for(NSTextField *field in @[self.macroName,self.macroRepeats]){field.editable=NO;field.selectable=YES;field.bezeled=NO;field.drawsBackground=NO;}
   NSStackView *nameRow=Stack(@[Label(@"Name",12,YES),self.macroName,Label(@"Repeat",12,YES),self.macroRepeats,Label(@"times",12,NO)],NSUserInterfaceLayoutOrientationHorizontal,10);
   self.macroTable=[[NSTableView alloc]initWithFrame:NSZeroRect];self.macroTable.delegate=self;self.macroTable.dataSource=self;self.macroTable.rowHeight=30;self.macroTable.target=self;self.macroTable.action=@selector(macroStepSelected:);self.macroTable.allowsEmptySelection=YES;self.macroTable.accessibilityLabel=@"Macro sequence";
   for(NSArray *spec in @[@[@"step",@"Step",@55],@[@"action",@"Action",@120],@[@"value",@"Key or pause",@540]]){NSTableColumn *c=[[NSTableColumn alloc]initWithIdentifier:spec[0]];c.title=spec[1];c.width=[spec[2] doubleValue];c.editable=NO;[self.macroTable addTableColumn:c];}
@@ -25,12 +27,14 @@
   NSStackView *order=Stack(@[self.macroDelete,self.macroUp,self.macroDown],NSUserInterfaceLayoutOrientationHorizontal,10);
   self.macroNotice=Label(@"",12,NO);self.macroNotice.maximumNumberOfLines=3;
   self.macroSave=[NSButton buttonWithTitle:@"Save macro to keyboard" target:self action:@selector(macroSaveClicked:)];self.macroSave.bezelColor=NSColor.controlAccentColor;
-  NSButton *cancel=[NSButton buttonWithTitle:@"Cancel" target:self action:@selector(closeMacro:)];cancel.keyEquivalent=@"\033";
+  NSButton *cancel=[NSButton buttonWithTitle:readOnly?@"Close":@"Cancel" target:self action:@selector(closeMacro:)];cancel.keyEquivalent=@"\033";
   self.macroRemove=[NSButton buttonWithTitle:@"Remove macro & restore key" target:self action:@selector(macroRemoveClicked:)];
-  NSView *space=[NSView new];NSStackView *actions=Stack(@[self.macroRemove,space,cancel,self.macroSave],NSUserInterfaceLayoutOrientationHorizontal,12);
-  NSStackView *root=Stack(@[Label(@"Macro sequence",22,YES),Label(@"Add a shortcut, or build individual presses, releases, and pauses. Changes are saved onboard.",12,NO),nameRow,scroll,order,stepRow,shortcutRow,self.macroNotice,actions],NSUserInterfaceLayoutOrientationVertical,16);root.translatesAutoresizingMaskIntoConstraints=NO;[self.macroWindow.contentView addSubview:root];NSView *content=self.macroWindow.contentView;
-  NSMutableArray *constraints=[NSMutableArray arrayWithArray:@[[root.leadingAnchor constraintEqualToAnchor:content.leadingAnchor constant:22],[root.trailingAnchor constraintEqualToAnchor:content.trailingAnchor constant:-22],[root.topAnchor constraintEqualToAnchor:content.topAnchor constant:22],[root.bottomAnchor constraintLessThanOrEqualToAnchor:content.bottomAnchor constant:-20],[self.macroName.widthAnchor constraintEqualToConstant:390],[self.macroRepeats.widthAnchor constraintEqualToConstant:50],[scroll.heightAnchor constraintEqualToConstant:260],[self.macroKeyButton.widthAnchor constraintEqualToConstant:220],[self.macroDelay.widthAnchor constraintEqualToConstant:110]]];
-  for(NSView *v in @[nameRow,scroll,order,stepRow,shortcutRow,self.macroNotice,actions])[constraints addObject:[v.widthAnchor constraintEqualToAnchor:root.widthAnchor]];[NSLayoutConstraint activateConstraints:constraints];
+  NSView *space=[NSView new];NSStackView *actions=Stack(readOnly?@[space,cancel]:@[self.macroRemove,space,cancel,self.macroSave],NSUserInterfaceLayoutOrientationHorizontal,12);
+  NSArray *rows=readOnly?@[Label(@"Saved macro",22,YES),nameRow,scroll,self.macroNotice,actions]:@[Label(@"Macro sequence",22,YES),Label(@"Add a shortcut, or build individual presses, releases, and pauses. Changes are saved onboard.",12,NO),nameRow,scroll,order,stepRow,shortcutRow,self.macroNotice,actions];
+  NSStackView *root=Stack(rows,NSUserInterfaceLayoutOrientationVertical,16);root.translatesAutoresizingMaskIntoConstraints=NO;[self.macroWindow.contentView addSubview:root];NSView *content=self.macroWindow.contentView;
+  NSMutableArray *constraints=[NSMutableArray arrayWithArray:@[[root.leadingAnchor constraintEqualToAnchor:content.leadingAnchor constant:22],[root.trailingAnchor constraintEqualToAnchor:content.trailingAnchor constant:-22],[root.topAnchor constraintEqualToAnchor:content.topAnchor constant:22],[root.bottomAnchor constraintLessThanOrEqualToAnchor:content.bottomAnchor constant:-20],[self.macroName.widthAnchor constraintEqualToConstant:390],[self.macroRepeats.widthAnchor constraintEqualToConstant:50],[scroll.heightAnchor constraintEqualToConstant:260]]];
+  if(!readOnly)[constraints addObjectsFromArray:@[[self.macroKeyButton.widthAnchor constraintEqualToConstant:220],[self.macroDelay.widthAnchor constraintEqualToConstant:110]]];
+  for(NSView *v in (readOnly?@[nameRow,scroll,self.macroNotice,actions]:@[nameRow,scroll,order,stepRow,shortcutRow,self.macroNotice,actions]))[constraints addObject:[v.widthAnchor constraintEqualToAnchor:root.widthAnchor]];[NSLayoutConstraint activateConstraints:constraints];
  }
  NSDictionary *existing=self.state[@"macroDefinitions"][self.macroKey.stringValue];self.macroName.stringValue=existing[@"name"]?:@"New macro";self.macroRepeats.stringValue=@"1";self.macroEvents=[NSMutableArray new];
  if(existing[@"data"]){NSData *data=[[NSData alloc]initWithBase64EncodedString:existing[@"data"] options:0];const uint8_t *p=data.bytes;self.macroRepeats.integerValue=p[1]+256u*p[2];for(unsigned i=4;i<data.length;i+=3)[self.macroEvents addObject:@{@"action":@(p[i]),@"value":@(p[i+1]+256u*p[i+2])}];}
@@ -68,12 +72,15 @@
  BOOL writable=macro_writes_enabled()&&MacrosWritable(self.state);
  self.macroSave.enabled=valid&&writable&&!unchanged&&!self.busy&&!self.demo&&self.state!=nil;
  self.macroRemove.enabled=writable&&!self.busy&&self.state&&[self isMacro:self.macroKey];
- NSInteger row=self.macroTable.selectedRow;self.macroUpdate.enabled=self.macroDelete.enabled=!self.busy&&row>=0&&row<(NSInteger)self.macroEvents.count;self.macroUp.enabled=self.macroUpdate.enabled&&row>0;self.macroDown.enabled=self.macroUpdate.enabled&&row+1<(NSInteger)self.macroEvents.count;
- self.macroName.enabled=self.macroRepeats.enabled=self.macroAction.enabled=self.macroKeyButton.enabled=self.macroDelay.enabled=self.macroTable.enabled=!self.busy;
- self.macroAdd.enabled=!self.busy&&self.macroEvents.count<MACRO_MAX_EVENTS;self.macroShortcut.enabled=!self.busy&&self.macroAction.indexOfSelectedItem!=2;for(NSButton *b in self.macroModifiers)b.enabled=!self.busy;
+ BOOL editing=!self.busy&&macro_writes_enabled();
+ NSInteger row=self.macroTable.selectedRow;self.macroUpdate.enabled=self.macroDelete.enabled=editing&&row>=0&&row<(NSInteger)self.macroEvents.count;self.macroUp.enabled=self.macroUpdate.enabled&&row>0;self.macroDown.enabled=self.macroUpdate.enabled&&row+1<(NSInteger)self.macroEvents.count;
+ self.macroTable.enabled=!self.busy;
+ self.macroName.enabled=self.macroRepeats.enabled=!self.busy;
+ self.macroAction.enabled=self.macroKeyButton.enabled=self.macroDelay.enabled=editing;
+ self.macroAdd.enabled=editing&&self.macroEvents.count<MACRO_MAX_EVENTS;self.macroShortcut.enabled=editing&&self.macroAction.indexOfSelectedItem!=2;for(NSButton *b in self.macroModifiers)b.enabled=editing;
  if(self.busy)return;
  if(!self.state)self.macroNotice.stringValue=@"Close this editor and reload to check the keyboard before saving again.";
- else if(!macro_writes_enabled())self.macroNotice.stringValue=@"Macro changes are paused while saving is being repaired. You can inspect the saved sequence.";
+ else if(!macro_writes_enabled())self.macroNotice.stringValue=@"Read-only. Macro editing, saving, and removal are unavailable.";
  else if(!writable)self.macroNotice.stringValue=@"Macro saves are blocked: the keyboard contains unreadable macro entries. Your existing mappings are preserved.";
  else if(!macro_name_valid(name.bytes,(unsigned)name.length))self.macroNotice.stringValue=@"Give this macro a name of up to 14 UTF-16 characters.";
  else if(!repeatOK)self.macroNotice.stringValue=@"Repeat must be a whole number from 1 to 100.";

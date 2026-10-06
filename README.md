@@ -17,7 +17,7 @@ Requires **Apple Silicon and macOS 13+**. This unofficial, experimental app is n
 
 Each save creates a backup and verifies the result. **Undo last save** restores the previous mapping; **Backups** opens the backup folder.
 
-**Macros can be inspected, but saving and removal are disabled because replacement is unreliable.**
+**Saved macros are read-only. Editing, saving, and removal are disabled because replacement is unreliable.**
 
 ## Build
 

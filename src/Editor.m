@@ -325,7 +325,7 @@ static NSArray *FilterChoices(NSArray *choices,NSString *query,NSString *group){
 - (void)showDetails:(id)sender{
  (void)sender;NSUInteger unknown=0;for(NSDictionary *entry in self.state[@"mappings"]){int type=[entry[@"type"] intValue];if(type!=7&&type!=12)unknown++;}
  NSAlert *alert=[NSAlert new];alert.messageText=@"Connection & saving";
- alert.informativeText=[NSString stringWithFormat:@"Connect the keyboard by USB with its selector OFF. Turn the heart light ON to use your onboard profile.\n\nEach save changes one key, creates a backup, and checks the result. macOS administrator authorization is needed for USB access.\n\nMacros support key presses, releases, and pauses. The special A / B buttons cannot be edited. %lu unrecognized profile entries are preserved.\n\nUnsaved choices stay in this window when you switch keys or reload. Undo restores the last saved key; reloading clears Undo.",(unsigned long)unknown];
+ alert.informativeText=[NSString stringWithFormat:@"Connect the keyboard by USB with its selector OFF. Turn the heart light ON to use your onboard profile.\n\nEach save changes one key, creates a backup, and checks the result. macOS administrator authorization is needed for USB access.\n\nSaved macro sequences are read-only. The special A / B buttons cannot be edited. %lu unrecognized profile entries are preserved.\n\nUnsaved choices stay in this window when you switch keys or reload. Undo restores the last saved key; reloading clears Undo.",(unsigned long)unknown];
  [alert addButtonWithTitle:@"Got it"];[alert beginSheetModalForWindow:self.window completionHandler:nil];
 }
 - (void)openPicker:(id)sender{
@@ -397,13 +397,14 @@ static NSArray *FilterChoices(NSArray *choices,NSString *query,NSString *group){
  self.destination.enabled=!self.busy&&valid&&!self.demo;self.defaults.enabled=self.destination.enabled;
  self.save.enabled=self.destination.enabled && desired.length==24 && mapping_valid(desired.bytes) && !matches_readback(self.selected.unsignedIntValue,desired.bytes,raw.bytes);
  NSDictionary *macro=self.selected?self.state[@"macroDefinitions"][self.selected.stringValue]:nil;
- self.macroButton.title=[self isMacro:self.selected]?@"Edit macro…":@"Create macro…";
- self.macroButton.enabled=!self.busy&&!self.demo&&self.state&&self.selected&&([self isMacro:self.selected]?[macro[@"editable"] boolValue]:valid);
+ self.macroButton.title=macro_writes_enabled()?([self isMacro:self.selected]?@"Edit macro…":@"Create macro…"):@"View macro…";
+ self.macroButton.hidden=!macro_writes_enabled()&&![self isMacro:self.selected];
+ self.macroButton.enabled=!self.busy&&self.state&&self.selected&&([self isMacro:self.selected]?[macro[@"editable"] boolValue]:(macro_writes_enabled()&&!self.demo&&valid));
  self.choose.enabled=self.destination.enabled;self.choose.title=self.selected?MappingName(desired,self.selected.intValue):@"Choose a key first";
  self.choose.accessibilityLabel=[@"Assign to: " stringByAppendingString:self.choose.title];
  self.discard.enabled=!self.busy&&self.selected&&self.drafts[self.selected]!=nil;
  BOOL dirty=self.selected&&self.drafts[self.selected]!=nil;
- self.changeSummary.stringValue=!self.selected?@"Search for a key to start editing.":(!self.state?@"Connect by USB, then reload.":([self isMacro:self.selected]?@"This key runs a sequence. Use Edit macro to change it.":(dirty?[NSString stringWithFormat:@"%@ → %@",MappingName(raw,self.selected.intValue),MappingName(desired,self.selected.intValue)]:@"This mapping is already saved on the keyboard.")));
+ self.changeSummary.stringValue=!self.selected?@"Search for a key to start editing.":(!self.state?@"Connect by USB, then reload.":([self isMacro:self.selected]?(macro_writes_enabled()?@"This key runs a sequence. Use Edit macro to change it.":@"This key runs a saved macro. Macro editing is unavailable."):(dirty?[NSString stringWithFormat:@"%@ → %@",MappingName(raw,self.selected.intValue),MappingName(desired,self.selected.intValue)]:@"This mapping is already saved on the keyboard.")));
  self.pendingLabel.stringValue=self.drafts.count?[NSString stringWithFormat:@"%lu unsaved %@",(unsigned long)self.drafts.count,self.drafts.count==1?@"change":@"changes"]:@"No unsaved changes";
  self.pendingLabel.textColor=self.drafts.count?NSColor.labelColor:NSColor.secondaryLabelColor;
  self.note.stringValue=self.drafts.count?@"Save applies the selected key only. macOS will ask for authorization; a backup is created automatically.":@"";self.note.hidden=!self.drafts.count;self.heartReminder.hidden=!self.state;
