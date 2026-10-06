@@ -6,7 +6,13 @@ A macOS app for remapping the 8BitDo 85HA using a clickable keyboard layout. Map
 
 [Download the latest release](https://github.com/solid-pixel/8bitdo-85ha-keyboard/releases/latest), unzip it, and open **8BitDo 85HA Keyboard.app**.
 
-Requires **Apple Silicon and macOS 13+**. This unofficial, experimental app is not notarized, so macOS may show a security warning.
+Requires **Apple Silicon and macOS 13+**. This unofficial, experimental app is not notarized by Apple. If macOS says it cannot verify the app:
+
+1. Click **Done** in the warning.
+2. Open **System Settings → Privacy & Security** and scroll down.
+3. Click **Open Anyway** beside the app's warning, authenticate, and confirm **Open**.
+
+This adds an exception for this app. See [Apple's instructions](https://support.apple.com/en-us/102445).
 
 ## Use
 
