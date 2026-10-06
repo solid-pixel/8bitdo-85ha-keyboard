@@ -34,7 +34,7 @@ for folder in ['MacOS','Resources','Helpers']:(staging/'Contents'/folder).mkdir(
 shutil.copy2(work/'85HAKeyboard',staging/'Contents/MacOS/85HAKeyboard')
 shutil.copy2(work/'85HAWriter',staging/'Contents/Helpers/85HAWriter')
 shutil.copy2(work/'85HAMacroWriter',staging/'Contents/Helpers/85HAMacroWriter')
-info=dict(CFBundleIdentifier=identifier,CFBundleName='8BitDo 85HA Keyboard',CFBundleDisplayName='8BitDo 85HA Keyboard',CFBundleExecutable='85HAKeyboard',CFBundleIconFile='AppIcon',CFBundlePackageType='APPL',CFBundleShortVersionString='0.1.3',CFBundleVersion='4',LSMinimumSystemVersion='13.0',NSHighResolutionCapable=True,NSPrincipalClass='NSApplication',NSHumanReadableCopyright='Local experimental editor for the 8BitDo 85HA. Not affiliated with 8BitDo.')
+info=dict(CFBundleIdentifier=identifier,CFBundleName='8BitDo 85HA Keyboard',CFBundleDisplayName='8BitDo 85HA Keyboard',CFBundleExecutable='85HAKeyboard',CFBundleIconFile='AppIcon',CFBundlePackageType='APPL',CFBundleShortVersionString='0.1.0',CFBundleVersion='1',LSMinimumSystemVersion='13.0',NSHighResolutionCapable=True,NSPrincipalClass='NSApplication',NSHumanReadableCopyright='Local experimental editor for the 8BitDo 85HA. Not affiliated with 8BitDo.')
 (staging/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
 shutil.copy2(here/'assets/AppIcon.icns',staging/'Contents/Resources/AppIcon.icns')
 shutil.copy2(src/'DemoProfile.json',staging/'Contents/Resources/DemoProfile.json')
