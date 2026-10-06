@@ -23,9 +23,9 @@ This adds an exception for this app. See [Apple's instructions](https://support.
 
 Each save creates a backup and verifies the result. **Undo last save** restores the previous mapping; **Backups** opens the backup folder.
 
-For combinations such as **Command+A**, choose **Assign to → Shortcut**, select a modifier and a key, then **Use shortcut**. Shortcuts currently support one modifier; combinations such as Command+Shift+A require macro editing.
+For shortcuts such as **Command+A**, choose **Assign to → Shortcut**, select a modifier and key, then **Use shortcut**. One modifier per shortcut.
 
-**Saved macros are read-only. Editing, saving, and removal are disabled because replacement is unreliable.**
+Saved macros are read-only.
 
 ## Build
 
@@ -35,6 +35,6 @@ With Xcode Command Line Tools and Python 3.12+ installed:
 python3 build.py
 ```
 
-See [BUILD.md](BUILD.md) for details and [audit/MACROS.md](audit/MACROS.md) for macro investigation notes.
+See [BUILD.md](BUILD.md) for details.
 
 Uses [libusb](third_party/COPYING-libusb) and protocol research from [8bitdo-kbd-mapper](https://github.com/goncalor/8bitdo-kbd-mapper) and [8-retro-kbd-ctl](https://github.com/paulguy/8-retro-kbd-ctl).

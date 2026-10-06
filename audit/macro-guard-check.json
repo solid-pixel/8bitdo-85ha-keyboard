@@ -1,6 +1,0 @@
-{
-  "returnCode": 2,
-  "stdout": "",
-  "stderr": "Macro table contains unsupported entries. No write attempted.\n",
-  "usbAccessAttempted": false
-}
