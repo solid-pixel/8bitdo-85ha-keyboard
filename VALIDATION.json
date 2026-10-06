@@ -154,5 +154,36 @@
     "codeSignatureVerified": true,
     "requiresOriginalWorkspace": false,
     "hardwareWritesPerformed": false
+  },
+  "shortcutImplementation": {
+    "date": "2026-10-06",
+    "appSHA256": "6db53640133e3491805351bc6377ba5be5069533e54452e243184de5aa589339",
+    "buildAndAutomatedChecksPassed": true,
+    "signatureVerified": true,
+    "supportedFormat": "One modifier usage plus one ordinary key; no trailing-byte extensions or modifier bitmasks",
+    "multiModifierShortcutsSupported": false,
+    "macroMutationGuardPreserved": true,
+    "liveUiVerified": [
+      "Shortcut category exposes left/right Command, Shift, Option and Control",
+      "Single-character search A selects only A",
+      "F13 search previews Command + F13",
+      "No results disables Use shortcut",
+      "Cancel creates no draft",
+      "Use shortcut creates a draft and does not write to USB",
+      "Saved Pause mapping shows compact Command+A on its keycap"
+    ],
+    "onboardSaveReadbackVerified": true,
+    "onlyPauseChanged": true,
+    "allOtherMappingsAndMacroDefinitionsPreserved": true,
+    "onboardUndoReadbackVerified": false,
+    "physicalShortcutPlaybackVerified": false,
+    "physicalModifierReleaseVerified": false,
+    "physicalPowerCycleVerified": false,
+    "screenshots": [
+      "audit/10-shortcut-picker.png",
+      "audit/11-shortcut-saved.png"
+    ],
+    "status": "Pause to Command+A saved and independently compared against its full-profile backup. Awaiting physical playback and release test; multi-modifier shortcuts require reliable macro editing.",
+    "releaseVersion": "0.2.0"
   }
 }

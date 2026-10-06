@@ -42,7 +42,6 @@
  [self.macroTable reloadData];[self.macroTable deselectAll:nil];[self macroActionChanged:nil];[self updateMacroButtons];[self.window beginSheet:self.macroWindow completionHandler:nil];
 }
 - (void)controlTextDidChange:(NSNotification *)note{if(note.object==self.macroName||note.object==self.macroRepeats)[self updateMacroButtons];}
-- (void)tableViewSelectionDidChange:(NSNotification *)note{if(note.object==self.macroTable)[self macroStepSelected:nil];}
 - (void)macroActionChanged:(id)sender{(void)sender;BOOL pause=self.macroAction.indexOfSelectedItem==2;self.macroDelay.hidden=!pause;self.macroKeyButton.hidden=pause;[self updateMacroButtons];}
 - (NSDictionary *)macroInputStep{
  if(self.macroAction.indexOfSelectedItem==2){NSScanner *scan=[NSScanner scannerWithString:self.macroDelay.stringValue];int n=0;if(![scan scanInt:&n]||!scan.isAtEnd||n<0||n>10000){self.macroNotice.stringValue=@"Use a pause between 0 and 10000 milliseconds.";return nil;}return @{@"action":@15,@"value":@(n)};}

@@ -18,6 +18,12 @@ static inline int mapping_valid(const uint8_t *data) {
  if(data[0]==7)return (data[1]==0 || (data[1]>=0xe0 && data[1]<=0xe7)) && (data[2]==0 || (data[2]>=4 && data[2]<=0x73));
  return data[0]==12 && media_usage(data[1]+256*data[2]);
 }
+// The legacy mapping stores a modifier usage, not a HID modifier bitmask.
+// Combining modifiers or using the unused trailing bytes is unverified.
+static inline int shortcut_mapping(unsigned int modifier,const uint8_t *key,uint8_t out[24]) {
+ if(modifier<0xe0 || modifier>0xe7 || !mapping_valid(key) || key[0]!=7 || key[1] || !key[2])return 0;
+ memcpy(out,key,24);out[1]=(uint8_t)modifier;return 1;
+}
 static inline int zero_mapping(const uint8_t *data) {static const uint8_t zero[24]={0};return !memcmp(data,zero,24);}
 static inline int matches_readback(unsigned int key,const uint8_t *target,const uint8_t *actual) {
  if(!memcmp(target,actual,24))return 1;

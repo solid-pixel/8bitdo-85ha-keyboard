@@ -24,6 +24,12 @@ int main(void){@autoreleasepool{
  NSData *f13=Payload(7,0,0x68),*bad=Payload(0xfa,0,0);assert(mapping_valid(f13.bytes));assert(!mapping_valid(bad.bytes));
  assert(!mapping_valid(Payload(7,1,4).bytes));assert(!mapping_valid(Payload(12,0xff,0xff).bytes));
  uint8_t trailing[24]={7,0,4};trailing[23]=1;assert(!mapping_valid(trailing));
+ NSData *cmdA=ShortcutPayload(0xe3,Payload(7,0,4));assert([Hex(cmdA) isEqual:@"07e304000000000000000000000000000000000000000000"]);
+ for(unsigned int modifier=0xe0;modifier<=0xe7;modifier++){NSData *shortcut=ShortcutPayload(modifier,f13);assert(shortcut.length==24&&mapping_valid(shortcut.bytes));const uint8_t *p=shortcut.bytes;assert(p[1]==modifier&&p[2]==0x68);}
+ assert(!ShortcutPayload(0x0a,Payload(7,0,4))); // Command+Shift HID bitmask is not this protocol's modifier usage.
+ assert(!ShortcutPayload(0xe3,cmdA));assert(!ShortcutPayload(0xe3,Payload(7,0xe1,0)));assert(!ShortcutPayload(0xe3,Payload(7,0,0)));
+ assert(!ShortcutPayload(0xe3,Payload(12,0xe9,0)));assert(!ShortcutPayload(0xe3,[NSData data]));
+ assert([MappingName(cmdA,0x48) isEqual:@"Command (left) + A"]);assert([CompactName(MappingName(cmdA,0x48)) isEqual:@"⌘A"]);assert([ChoiceGroup(cmdA) isEqual:@"Shortcut"]);
  NSData *zero=[NSMutableData dataWithLength:24];assert(matches_readback(0x47,Default(0x47).bytes,zero.bytes));assert(!matches_readback(0x47,f13.bytes,zero.bytes));
  NSDictionary *other=@{@"key":@0x66,@"type":@7,@"data":[Payload(7,0xe3,0) base64EncodedStringWithOptions:0]};
  NSDictionary *before=@{@"profile":@"work",@"mappings":@[other],@"macroPackets":@[@"original"]};
@@ -78,7 +84,23 @@ int main(void){@autoreleasepool{
  ui.search.stringValue=@"no-match";[ui filterChanged:nil];assert(!ui.selected && !ui.choose.enabled && !ui.save.enabled && ui.drafts.count==1);
  ui.search.stringValue=@"third";[ui filterChanged:nil];assert([ui.selected isEqual:@0x66] && [ui.destination.selectedItem.representedObject isEqual:f13]);
  [ui discardClicked:nil];assert(!ui.drafts.count&&!ui.save.enabled);
+ // The shortcut picker creates a draft only on confirmation; no results cannot apply a stale key.
+ ui.selected=@0x48;[ui updateSelection];[ui openPicker:ui.choose];ui.pickerCategories.selectedSegment=4;[ui filterPicker:nil];
+ assert([ui shortcutMode]&&[ui.pickerShortcut isEqual:ShortcutPayload(0xe3,Default(0x48))]&&ui.shortcutApply.enabled);
+ NSUInteger aRow=[ui.choiceRows indexOfObjectPassingTest:^BOOL(NSDictionary *item,NSUInteger idx,BOOL *stop){(void)idx;(void)stop;return [item[@"data"] isEqual:Payload(7,0,4)];}];assert(aRow!=NSNotFound);[ui.pickerTable selectRowIndexes:[NSIndexSet indexSetWithIndex:aRow] byExtendingSelection:NO];assert([ui.pickerShortcut isEqual:cmdA]);
+ [ui pickMapping:nil];assert(!ui.drafts.count);[ui cancelPicker:nil];assert(!ui.drafts.count);
+ [ui openPicker:ui.choose];ui.pickerCategories.selectedSegment=4;[ui filterPicker:nil];
+ ui.pickerSearch.stringValue=@"a";[ui filterPicker:nil];assert(ui.choiceRows.count==1&&[ui.pickerShortcut isEqual:cmdA]);
+ ui.pickerSearch.stringValue=@"F13";[ui filterPicker:nil];assert(ui.choiceRows.count==1&&((const uint8_t *)ui.pickerShortcut.bytes)[2]==0x68);
+ [ui.shortcutModifier selectItemWithTag:0xe7];[ui shortcutModifierChanged:nil];assert(((const uint8_t *)ui.pickerShortcut.bytes)[1]==0xe7);
+ ui.pickerSearch.stringValue=@"no-match";[ui filterPicker:nil];assert(!ui.pickerShortcut&&!ui.shortcutApply.enabled);[ui applyShortcut:nil];assert(!ui.drafts.count);
+ ui.pickerSearch.stringValue=@"";[ui filterPicker:nil];assert(((const uint8_t *)ui.pickerShortcut.bytes)[2]==0x68);[ui confirmPicker:nil];
+ NSData *rightCmdF13=ShortcutPayload(0xe7,f13);assert([ui.drafts[@0x48] isEqual:rightCmdF13]&&ui.save.enabled);
+ [ui openPicker:ui.choose];assert([ui shortcutMode]&&[ui.pickerShortcut isEqual:rightCmdF13]);[ui cancelPicker:nil];
+ ui.selected=@0x66;[ui updateSelection];ui.selected=@0x48;[ui updateSelection];assert([ui.destination.selectedItem.representedObject isEqual:rightCmdF13]);
+ NSMutableDictionary *comboAfter=[before mutableCopy];comboAfter[@"mappings"]=@[other,@{@"key":@0x48,@"type":@7,@"data":[rightCmdF13 base64EncodedStringWithOptions:0]}];assert(Verify(before,comboAfter,@0x48,rightCmdF13));assert(Verify(comboAfter,before,@0x48,Default(0x48)));
+ [ui discardClicked:nil];assert(!ui.drafts.count);
  NSMutableDictionary *macroState=[before mutableCopy];macroState[@"macroKeys"]=@[@0x46];ui.state=macroState;ui.selected=@0x46;[ui updateSelection];assert(!ui.choose.enabled&&!ui.save.enabled);
- puts("PASS: geometry, mapping search, drafts, macro decoding and name encoding, sequence bounds and balanced keys, packet offsets, malformed-table blocking, collateral verification, and quoting.");
+ puts("PASS: geometry, mapping search, shortcut encoding and picker confirmation, drafts, macro decoding and name encoding, sequence bounds and balanced keys, packet offsets, malformed-table blocking, collateral verification, and quoting.");
  return 0;
 }}

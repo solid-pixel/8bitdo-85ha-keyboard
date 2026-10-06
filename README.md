@@ -23,6 +23,8 @@ This adds an exception for this app. See [Apple's instructions](https://support.
 
 Each save creates a backup and verifies the result. **Undo last save** restores the previous mapping; **Backups** opens the backup folder.
 
+For combinations such as **Command+A**, choose **Assign to → Shortcut**, select a modifier and a key, then **Use shortcut**. Shortcuts currently support one modifier; combinations such as Command+Shift+A require macro editing.
+
 **Saved macros are read-only. Editing, saving, and removal are disabled because replacement is unreliable.**
 
 ## Build

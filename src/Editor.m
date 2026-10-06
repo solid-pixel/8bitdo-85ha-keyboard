@@ -106,6 +106,10 @@ static NSString *MappingName(NSData *data,int key){
  if(p[1]&&p[2])return [NSString stringWithFormat:@"%@ + %@",ModifierNames()[@(p[1])],UsageName(p[2])];
  return p[1]?ModifierNames()[@(p[1])]:UsageName(p[2]);
 }
+static NSData *ShortcutPayload(unsigned int modifier,NSData *key){
+ uint8_t out[24];if(key.length!=24||!shortcut_mapping(modifier,key.bytes,out))return nil;
+ return [NSData dataWithBytes:out length:24];
+}
 static NSTextField *Label(NSString *text,CGFloat size,BOOL bold){NSTextField *l=[NSTextField wrappingLabelWithString:text];l.font=bold?[NSFont systemFontOfSize:size weight:NSFontWeightSemibold]:[NSFont systemFontOfSize:size];return l;}
 static NSStackView *Stack(NSArray *views,NSUserInterfaceLayoutOrientation orientation,CGFloat spacing){NSStackView *s=[NSStackView stackViewWithViews:views];s.orientation=orientation;s.spacing=spacing;s.alignment=orientation==NSUserInterfaceLayoutOrientationVertical?NSLayoutAttributeLeading:NSLayoutAttributeTop;return s;}
 
@@ -139,6 +143,8 @@ static NSArray *KeyboardLayout(void){
 }
 static NSString *CompactName(NSString *name){
  NSDictionary *shortNames=@{@"Command (left)":@"⌘ Cmd",@"Command (right)":@"⌘ Cmd",@"Option (left)":@"⌥ Opt",@"Option (right)":@"⌥ Opt",@"Control (left)":@"Ctrl",@"Control (right)":@"Ctrl",@"Shift (left)":@"Shift",@"Shift (right)":@"Shift",@"Brightness up":@"Bri +",@"Brightness down":@"Bri −",@"Next track":@"Next",@"Previous track":@"Prev",@"Play / pause":@"Play",@"Volume up":@"Vol +",@"Volume down":@"Vol −",@"Disabled":@"Off",@"Unrecognized mapping":@"Unknown"};
+ NSArray *parts=[name componentsSeparatedByString:@" + "];
+ if(parts.count==2){NSDictionary *symbols=@{@"Control (left)":@"⌃",@"Control (right)":@"⌃",@"Shift (left)":@"⇧",@"Shift (right)":@"⇧",@"Option (left)":@"⌥",@"Option (right)":@"⌥",@"Command (left)":@"⌘",@"Command (right)":@"⌘"};if(symbols[parts[0]])return [symbols[parts[0]] stringByAppendingString:parts[1]];}
  return shortNames[name]?:name;
 }
 @interface BD85KeyButton:NSButton
@@ -202,14 +208,15 @@ static NSColor *CanvasColor(void){
 static NSButton *IconButton(NSString *title,NSString *symbol,id target,SEL action){
  NSButton *b=[NSButton buttonWithTitle:title target:target action:action];b.image=[NSImage imageWithSystemSymbolName:symbol accessibilityDescription:nil];b.imagePosition=NSImageLeading;b.imageHugsTitle=YES;b.accessibilityLabel=title;return b;
 }
-static NSString *ChoiceGroup(NSData *data){const uint8_t *p=data.bytes;if(p[0]==12)return @"Media";if(p[1])return @"Modifiers";return p[2]?@"Keys":@"Other";}
+static NSString *ChoiceGroup(NSData *data){const uint8_t *p=data.bytes;if(p[0]==12)return @"Media";if(p[1])return p[2]?@"Shortcut":@"Modifiers";return p[2]?@"Keys":@"Other";}
 static NSArray *FilterChoices(NSArray *choices,NSString *query,NSString *group){
- return [choices filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSDictionary *item,NSDictionary *bindings){(void)bindings;return ([group isEqual:@"All"]||[item[@"group"] isEqual:group])&&(!query.length||[item[@"title"] localizedCaseInsensitiveContainsString:query]);}]];
+ BOOL literalKey=[group isEqual:@"Keys"]&&query.length==1&&[@"ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" containsString:query.uppercaseString];
+ return [choices filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(NSDictionary *item,NSDictionary *bindings){(void)bindings;return ([group isEqual:@"All"]||[item[@"group"] isEqual:group])&&(!query.length||(literalKey?[item[@"title"] caseInsensitiveCompare:query]==NSOrderedSame:[item[@"title"] localizedCaseInsensitiveContainsString:query]));}]];
 }
 @interface BD85ChoiceTable:NSTableView
 @end
 @implementation BD85ChoiceTable
-- (void)keyDown:(NSEvent *)event{if(event.keyCode==36||event.keyCode==76){[NSApp sendAction:self.action to:self.target from:self];return;}[super keyDown:event];}
+- (void)keyDown:(NSEvent *)event{if(event.keyCode==36||event.keyCode==76){[NSApp sendAction:@selector(confirmPicker:) to:self.target from:self];return;}[super keyDown:event];}
 @end
 
 @interface BD85Controller:NSObject<NSWindowDelegate,NSTableViewDataSource,NSTableViewDelegate,NSTextFieldDelegate>
@@ -236,6 +243,12 @@ static NSArray *FilterChoices(NSArray *choices,NSString *query,NSString *group){
 @property NSSearchField *pickerSearch;
 @property NSSegmentedControl *pickerCategories;
 @property NSTableView *pickerTable;
+@property NSPopUpButton *shortcutModifier;
+@property NSStackView *shortcutControls;
+@property NSTextField *shortcutNotice;
+@property NSButton *shortcutApply;
+@property NSData *shortcutKey;
+@property BOOL filteringPicker;
 @property NSArray *choices,*choiceRows;
 @property NSArray *catalog,*rows;
 @property NSDictionary *state,*undoRecord;
@@ -330,38 +343,74 @@ static NSArray *FilterChoices(NSArray *choices,NSString *query,NSString *group){
 }
 - (void)openPicker:(id)sender{
  self.pickingMacro=(sender==self.macroKeyButton);if(self.pickingMacro?!self.macroKeyButton.enabled:!self.choose.enabled)return;
- if(!self.picker){
-  self.picker=[[NSPanel alloc]initWithContentRect:NSMakeRect(0,0,450,450) styleMask:NSWindowStyleMaskTitled backing:NSBackingStoreBuffered defer:NO];self.picker.title=@"Choose a mapping";
-  NSViewController *vc=[NSViewController new];vc.view=[[NSView alloc]initWithFrame:NSMakeRect(0,0,450,450)];self.picker.contentViewController=vc;
+ [self buildPicker];
+ NSMutableArray *choices=[NSMutableArray new];for(NSMenuItem *item in self.destination.itemArray)if([item.representedObject isKindOfClass:NSData.class]&&(!self.pickingMacro||([item.representedObject length]==24&&((const uint8_t *)[item.representedObject bytes])[0]==7&&(!!((const uint8_t *)[item.representedObject bytes])[1]!=!!((const uint8_t *)[item.representedObject bytes])[2]))))[choices addObject:@{@"title":MappingName(item.representedObject,self.selected.intValue),@"data":item.representedObject,@"group":ChoiceGroup(item.representedObject)}];self.choices=choices;
+ NSData *current=self.destination.selectedItem.representedObject;const uint8_t *p=current.bytes;
+ BOOL shortcut=!self.pickingMacro&&current.length==24&&mapping_valid(p)&&p[0]==7&&p[1]&&p[2];
+ [self.shortcutModifier selectItemWithTag:shortcut?p[1]:0xe3];
+ self.shortcutKey=shortcut?Payload(7,0,p[2]):(!self.pickingMacro&&[ChoiceGroup(current) isEqual:@"Keys"]?current:Payload(7,0,4));
+ self.pickerSearch.stringValue=@"";self.pickerCategories.selectedSegment=shortcut?4:0;[self.pickerCategories setEnabled:!self.pickingMacro forSegment:4];[self filterPicker:nil];
+ [(self.pickingMacro?self.macroWindow:self.window) beginSheet:self.picker completionHandler:nil];[self.picker makeFirstResponder:self.pickerSearch];
+}
+- (void)buildPicker{
+ if(self.picker)return;
+  self.picker=[[NSPanel alloc]initWithContentRect:NSMakeRect(0,0,520,550) styleMask:NSWindowStyleMaskTitled backing:NSBackingStoreBuffered defer:NO];self.picker.title=@"Choose a mapping";
+  NSViewController *vc=[NSViewController new];vc.view=[[NSView alloc]initWithFrame:NSMakeRect(0,0,520,550)];self.picker.contentViewController=vc;
   self.pickerSearch=[[NSSearchField alloc]initWithFrame:NSZeroRect];self.pickerSearch.placeholderString=@"Search mappings, e.g. Command or F13";self.pickerSearch.sendsSearchStringImmediately=YES;self.pickerSearch.target=self;self.pickerSearch.action=@selector(filterPicker:);
-  self.pickerCategories=[NSSegmentedControl segmentedControlWithLabels:@[@"All",@"Keys",@"Modifiers",@"Media"] trackingMode:NSSegmentSwitchTrackingSelectOne target:self action:@selector(filterPicker:)];self.pickerCategories.selectedSegment=0;
+  self.pickerCategories=[NSSegmentedControl segmentedControlWithLabels:@[@"All",@"Keys",@"Modifiers",@"Media",@"Shortcut"] trackingMode:NSSegmentSwitchTrackingSelectOne target:self action:@selector(filterPicker:)];self.pickerCategories.selectedSegment=0;
+  self.shortcutModifier=[[NSPopUpButton alloc]initWithFrame:NSZeroRect pullsDown:NO];self.shortcutModifier.target=self;self.shortcutModifier.action=@selector(shortcutModifierChanged:);self.shortcutModifier.accessibilityLabel=@"Shortcut modifier";
+  for(NSNumber *modifier in @[@0xe3,@0xe1,@0xe2,@0xe0,@0xe7,@0xe5,@0xe6,@0xe4]){[self.shortcutModifier addItemWithTitle:ModifierNames()[modifier]];self.shortcutModifier.lastItem.tag=modifier.intValue;}
+  self.shortcutControls=Stack(@[Label(@"Modifier",12,YES),self.shortcutModifier],NSUserInterfaceLayoutOrientationVertical,5);
+  self.shortcutNotice=Label(@"One modifier per shortcut. Multiple modifiers require macro editing, which is currently unavailable.",12,NO);self.shortcutNotice.textColor=NSColor.secondaryLabelColor;
   self.pickerTable=[[BD85ChoiceTable alloc]initWithFrame:NSZeroRect];self.pickerTable.dataSource=self;self.pickerTable.delegate=self;self.pickerTable.rowHeight=34;self.pickerTable.headerView=nil;self.pickerTable.target=self;self.pickerTable.action=@selector(pickMapping:);self.pickerTable.allowsEmptySelection=YES;self.pickerTable.accessibilityLabel=@"Supported mappings";
-  NSTableColumn *name=[[NSTableColumn alloc]initWithIdentifier:@"name"];name.width=298;name.editable=NO;[self.pickerTable addTableColumn:name];
+  NSTableColumn *name=[[NSTableColumn alloc]initWithIdentifier:@"name"];name.width=370;name.editable=NO;[self.pickerTable addTableColumn:name];
   NSTableColumn *type=[[NSTableColumn alloc]initWithIdentifier:@"type"];type.width=100;type.editable=NO;[self.pickerTable addTableColumn:type];
   NSScrollView *scroll=[NSScrollView new];scroll.documentView=self.pickerTable;scroll.hasVerticalScroller=YES;scroll.borderType=NSNoBorder;
   self.pickerResult=Label(@"",12,NO);self.pickerResult.textColor=NSColor.secondaryLabelColor;
   NSButton *cancel=[NSButton buttonWithTitle:@"Cancel" target:self action:@selector(cancelPicker:)];cancel.keyEquivalent=@"\033";
-  NSStackView *root=Stack(@[Label(@"Choose a mapping",17,YES),self.pickerSearch,self.pickerCategories,scroll,self.pickerResult,cancel],NSUserInterfaceLayoutOrientationVertical,12);root.translatesAutoresizingMaskIntoConstraints=NO;[vc.view addSubview:root];
-  NSMutableArray *constraints=[NSMutableArray arrayWithArray:@[[root.leadingAnchor constraintEqualToAnchor:vc.view.leadingAnchor constant:16],[root.trailingAnchor constraintEqualToAnchor:vc.view.trailingAnchor constant:-16],[root.topAnchor constraintEqualToAnchor:vc.view.topAnchor constant:16],[root.bottomAnchor constraintEqualToAnchor:vc.view.bottomAnchor constant:-16],[scroll.heightAnchor constraintEqualToConstant:240]]];
-  for(NSView *v in @[self.pickerSearch,self.pickerCategories,scroll,self.pickerResult])[constraints addObject:[v.widthAnchor constraintEqualToAnchor:root.widthAnchor]];
+  self.shortcutApply=[NSButton buttonWithTitle:@"Use shortcut" target:self action:@selector(applyShortcut:)];
+  NSStackView *actions=Stack(@[cancel,[NSView new],self.shortcutApply],NSUserInterfaceLayoutOrientationHorizontal,12);
+  NSStackView *root=Stack(@[Label(@"Choose a mapping",17,YES),self.pickerSearch,self.pickerCategories,self.shortcutControls,scroll,self.pickerResult,self.shortcutNotice,actions],NSUserInterfaceLayoutOrientationVertical,12);root.translatesAutoresizingMaskIntoConstraints=NO;[vc.view addSubview:root];
+  NSMutableArray *constraints=[NSMutableArray arrayWithArray:@[[root.leadingAnchor constraintEqualToAnchor:vc.view.leadingAnchor constant:16],[root.trailingAnchor constraintEqualToAnchor:vc.view.trailingAnchor constant:-16],[root.topAnchor constraintEqualToAnchor:vc.view.topAnchor constant:16],[root.bottomAnchor constraintEqualToAnchor:vc.view.bottomAnchor constant:-16],[scroll.heightAnchor constraintGreaterThanOrEqualToConstant:220],[self.shortcutModifier.widthAnchor constraintEqualToAnchor:self.shortcutControls.widthAnchor]]];
+  for(NSView *v in @[self.pickerSearch,self.pickerCategories,self.shortcutControls,scroll,self.pickerResult,self.shortcutNotice,actions])[constraints addObject:[v.widthAnchor constraintEqualToAnchor:root.widthAnchor]];
   [NSLayoutConstraint activateConstraints:constraints];
- }
- NSMutableArray *choices=[NSMutableArray new];for(NSMenuItem *item in self.destination.itemArray)if([item.representedObject isKindOfClass:NSData.class]&&(!self.pickingMacro||([item.representedObject length]==24&&((const uint8_t *)[item.representedObject bytes])[0]==7&&(!!((const uint8_t *)[item.representedObject bytes])[1]!=!!((const uint8_t *)[item.representedObject bytes])[2]))))[choices addObject:@{@"title":item.title,@"data":item.representedObject,@"group":ChoiceGroup(item.representedObject)}];self.choices=choices;
- self.pickerSearch.stringValue=@"";self.pickerCategories.selectedSegment=0;[self filterPicker:nil];
- [(self.pickingMacro?self.macroWindow:self.window) beginSheet:self.picker completionHandler:nil];[self.picker makeFirstResponder:self.pickerSearch];
 }
 - (void)cancelPicker:(id)sender{(void)sender;[self.picker.sheetParent endSheet:self.picker];[self.picker orderOut:nil];}
 - (void)filterPicker:(id)sender{
- (void)sender;self.choiceRows=FilterChoices(self.choices,self.pickerSearch.stringValue,[self.pickerCategories labelForSegment:self.pickerCategories.selectedSegment]);
+ (void)sender;BOOL shortcut=[self shortcutMode];
+ self.shortcutControls.hidden=!shortcut;self.shortcutNotice.hidden=!shortcut;self.shortcutApply.hidden=!shortcut;
+ self.pickerSearch.placeholderString=shortcut?@"Search keys, e.g. A or F13":@"Search mappings, e.g. Command or F13";
+ self.choiceRows=FilterChoices(self.choices,self.pickerSearch.stringValue,shortcut?@"Keys":[self.pickerCategories labelForSegment:self.pickerCategories.selectedSegment]);
+ self.filteringPicker=YES;
  [self.pickerTable reloadData];[self.pickerTable deselectAll:nil];
- if(self.choiceRows.count){[self.pickerTable selectRowIndexes:[NSIndexSet indexSetWithIndex:0] byExtendingSelection:NO];[self.pickerTable scrollRowToVisible:0];}
- self.pickerResult.stringValue=self.choiceRows.count?[NSString stringWithFormat:@"%lu supported %@ · Click to choose",(unsigned long)self.choiceRows.count,self.choiceRows.count==1?@"mapping":@"mappings"]:@"No supported mappings match. Try another search or category.";
+ if(self.choiceRows.count){NSUInteger index=0;if(shortcut){NSUInteger found=[self.choiceRows indexOfObjectPassingTest:^BOOL(NSDictionary *item,NSUInteger idx,BOOL *stop){(void)idx;(void)stop;return [item[@"data"] isEqual:self.shortcutKey];}];if(found!=NSNotFound)index=found;}[self.pickerTable selectRowIndexes:[NSIndexSet indexSetWithIndex:index] byExtendingSelection:NO];[self.pickerTable scrollRowToVisible:index];}
+ self.filteringPicker=NO;[self updatePickerPreview];
+}
+- (BOOL)shortcutMode{return !self.pickingMacro&&[[self.pickerCategories labelForSegment:self.pickerCategories.selectedSegment] isEqual:@"Shortcut"];}
+- (NSData *)pickerShortcut{
+ NSInteger row=self.pickerTable.selectedRow;
+ if(![self shortcutMode]||row<0||row>=(NSInteger)self.choiceRows.count)return nil;
+ return ShortcutPayload((unsigned int)self.shortcutModifier.selectedItem.tag,self.choiceRows[row][@"data"]);
+}
+- (void)updatePickerPreview{
+ if([self shortcutMode]){NSData *data=[self pickerShortcut];self.shortcutApply.enabled=data!=nil&&self.choose.enabled;
+  if(data)self.shortcutKey=self.choiceRows[self.pickerTable.selectedRow][@"data"];
+  self.pickerResult.stringValue=data?[@"Shortcut: " stringByAppendingString:MappingName(data,0)]:@"No keys match. Try another search.";
+ }else{self.shortcutApply.enabled=NO;self.pickerResult.stringValue=self.choiceRows.count?[NSString stringWithFormat:@"%lu supported %@ · Click to choose",(unsigned long)self.choiceRows.count,self.choiceRows.count==1?@"mapping":@"mappings"]:@"No supported mappings match. Try another search or category.";}
+}
+- (void)shortcutModifierChanged:(id)sender{(void)sender;[self updatePickerPreview];}
+- (void)tableViewSelectionDidChange:(NSNotification *)notification{if(notification.object==self.pickerTable&&!self.filteringPicker)[self updatePickerPreview];else if(notification.object==self.macroTable)[self macroStepSelected:nil];}
+- (void)confirmPicker:(id)sender{if([self shortcutMode])[self applyShortcut:sender];else [self pickMapping:sender];}
+- (void)applyShortcut:(id)sender{
+ (void)sender;NSData *data=[self pickerShortcut];if(!data||!self.choose.enabled)return;
+ [self selectPayload:data];[self destinationChanged:nil];[self cancelPicker:nil];[self.window makeFirstResponder:self.choose];
 }
 - (NSInteger)numberOfRowsInTableView:(NSTableView *)table{return table==self.macroTable?self.macroEvents.count:self.choiceRows.count;}
 - (id)tableView:(NSTableView *)table objectValueForTableColumn:(NSTableColumn *)column row:(NSInteger)row{if(table==self.macroTable){NSDictionary *step=self.macroEvents[row];unsigned action=[step[@"action"] unsignedIntValue],value=[step[@"value"] unsignedIntValue];if([column.identifier isEqual:@"step"])return @(row+1);if([column.identifier isEqual:@"action"])return action==15?@"Pause":(action&0x80?@"Press":@"Release");return action==15?[NSString stringWithFormat:@"%u ms",value]:(action==3||action==0x83?ModifierNames()[@(value)]:UsageName(value));}return self.choiceRows[row][[column.identifier isEqual:@"name"]?@"title":@"group"];}
 - (void)pickMapping:(id)sender{
  (void)sender;NSInteger row=self.pickerTable.selectedRow;
  if(row<0||row>=(NSInteger)self.choiceRows.count||(self.pickingMacro?!self.macroKeyButton.enabled:!self.choose.enabled))return;
+ if([self shortcutMode]){[self updatePickerPreview];return;}
  if(self.pickingMacro){self.macroEventKey=self.choiceRows[row][@"data"];self.macroKeyButton.title=MappingName(self.macroEventKey,0);[self cancelPicker:nil];return;}
  [self selectPayload:self.choiceRows[row][@"data"]];[self destinationChanged:nil];[self cancelPicker:nil];[self.window makeFirstResponder:self.choose];
 }
