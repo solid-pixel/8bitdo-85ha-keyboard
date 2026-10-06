@@ -256,8 +256,8 @@ static NSArray *FilterChoices(NSArray *choices,NSString *query,NSString *group){
 - (void)buildWindow{
  self.window=[[NSWindow alloc]initWithContentRect:NSMakeRect(0,0,1120,830) styleMask:NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable backing:NSBackingStoreBuffered defer:NO];
  self.window.contentView=[[BD85Canvas alloc]initWithFrame:self.window.contentView.bounds];self.window.backgroundColor=CanvasColor();
- self.window.title=@"85HA Keyboard";self.window.delegate=self;self.window.minSize=NSMakeSize(1040,800);self.window.releasedWhenClosed=NO;
- NSTextField *heading=Label(@"85HA Keyboard",23,YES);self.connection=Label(@"Reading keyboard…",12,NO);self.connection.textColor=NSColor.secondaryLabelColor;
+ self.window.title=@"8BitDo 85HA Keyboard";self.window.delegate=self;self.window.minSize=NSMakeSize(1040,800);self.window.releasedWhenClosed=NO;
+ NSTextField *heading=Label(@"8BitDo 85HA Keyboard",23,YES);self.connection=Label(@"Reading keyboard…",12,NO);self.connection.textColor=NSColor.secondaryLabelColor;
  NSStackView *headingGroup=Stack(@[heading,self.connection],NSUserInterfaceLayoutOrientationVertical,5);
  self.reload=IconButton(@"Reload",@"arrow.clockwise",self,@selector(reloadClicked:));self.reload.toolTip=@"Read the saved profile again. Unsaved choices stay in this window.";
  NSButton *backups=IconButton(@"Backups",@"folder",self,@selector(showBackups:));
@@ -521,7 +521,7 @@ static BD85Controller *controller;
 void BD85StartEditor(void){
  if(!NSApp.mainMenu){dispatch_after(dispatch_time(DISPATCH_TIME_NOW,300*NSEC_PER_MSEC),dispatch_get_main_queue(),^{BD85StartEditor();});return;}
  controller=[BD85Controller new];
- NSMenuItem *top=[[NSMenuItem alloc]initWithTitle:@"85HA Keyboard" action:nil keyEquivalent:@""];NSMenu *menu=[[NSMenu alloc]initWithTitle:@"85HA Keyboard"];
+ NSMenuItem *top=[[NSMenuItem alloc]initWithTitle:@"8BitDo 85HA Keyboard" action:nil keyEquivalent:@""];NSMenu *menu=[[NSMenu alloc]initWithTitle:@"8BitDo 85HA Keyboard"];
  NSMenuItem *show=[[NSMenuItem alloc]initWithTitle:@"Open 85HA Editor…" action:@selector(show:) keyEquivalent:@"k"];show.keyEquivalentModifierMask=NSEventModifierFlagCommand|NSEventModifierFlagOption;show.target=controller;[menu addItem:show];top.submenu=menu;[NSApp.mainMenu insertItem:top atIndex:MIN(1,NSApp.mainMenu.numberOfItems)];
  [NSNotificationCenter.defaultCenter addObserverForName:NSApplicationDidBecomeActiveNotification object:nil queue:NSOperationQueue.mainQueue usingBlock:^(NSNotification *note){(void)note;if(!controller.window.visible)[controller show:nil];}];
  [controller show:nil];[controller reloadClicked:nil];

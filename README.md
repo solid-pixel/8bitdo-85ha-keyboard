@@ -1,10 +1,10 @@
-# 85HA Keyboard
+# 8BitDo 85HA Keyboard
 
 A macOS app for remapping the 8BitDo 85HA using a clickable keyboard layout. Mappings are saved inside the keyboard and work over USB or wireless.
 
 ## Download
 
-[Download the latest release](https://github.com/solid-pixel/8bitdo-85ha-keyboard/releases/latest), unzip it, and open **85HA Keyboard.app**.
+[Download the latest release](https://github.com/solid-pixel/8bitdo-85ha-keyboard/releases/latest), unzip it, and open **8BitDo 85HA Keyboard.app**.
 
 Requires **Apple Silicon and macOS 13+**. This unofficial, experimental app is not notarized, so macOS may show a security warning.
 

@@ -12,11 +12,11 @@ int main(int argc,const char **argv){(void)argc;(void)argv;@autoreleasepool{
  NSApplication *application=NSApplication.sharedApplication;[application setActivationPolicy:NSApplicationActivationPolicyRegular];
  BD85AppDelegate *delegate=[BD85AppDelegate new];application.delegate=delegate;
  NSMenu *menu=[[NSMenu alloc]initWithTitle:@""];
- NSMenuItem *appItem=[[NSMenuItem alloc]initWithTitle:@"85HA Keyboard" action:nil keyEquivalent:@""];
- NSMenu *appMenu=[[NSMenu alloc]initWithTitle:@"85HA Keyboard"];
- [appMenu addItemWithTitle:@"About 85HA Keyboard" action:@selector(orderFrontStandardAboutPanel:) keyEquivalent:@""];
+ NSMenuItem *appItem=[[NSMenuItem alloc]initWithTitle:@"8BitDo 85HA Keyboard" action:nil keyEquivalent:@""];
+ NSMenu *appMenu=[[NSMenu alloc]initWithTitle:@"8BitDo 85HA Keyboard"];
+ [appMenu addItemWithTitle:@"About 8BitDo 85HA Keyboard" action:@selector(orderFrontStandardAboutPanel:) keyEquivalent:@""];
  [appMenu addItem:NSMenuItem.separatorItem];
- [appMenu addItemWithTitle:@"Quit 85HA Keyboard" action:@selector(terminate:) keyEquivalent:@"q"];
+ [appMenu addItemWithTitle:@"Quit 8BitDo 85HA Keyboard" action:@selector(terminate:) keyEquivalent:@"q"];
  appItem.submenu=appMenu;[menu addItem:appItem];
  NSMenuItem *editItem=[[NSMenuItem alloc]initWithTitle:@"Edit" action:nil keyEquivalent:@""];
  NSMenu *edit=[[NSMenu alloc]initWithTitle:@"Edit"];

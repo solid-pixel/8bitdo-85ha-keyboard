@@ -1,4 +1,4 @@
-"""Build the standalone Apple Silicon 85HA Keyboard app. No V2 installation needed."""
+"""Build the standalone Apple Silicon 8BitDo 85HA Keyboard app. No V2 installation needed."""
 from pathlib import Path
 import argparse, plistlib, shutil, subprocess, tarfile
 
@@ -7,7 +7,7 @@ src=here/'src'
 work=here/'.build'
 work.mkdir(parents=True,exist_ok=True)
 parser=argparse.ArgumentParser();parser.add_argument('--replace',action='store_true');args=parser.parse_args()
-target=here/'85HA Keyboard.app'
+target=here/'8BitDo 85HA Keyboard.app'
 identifier='local.8bitdo.85ha-keyboard'
 if target.exists():
     old=plistlib.loads((target/'Contents/Info.plist').read_bytes())
@@ -34,7 +34,7 @@ for folder in ['MacOS','Resources','Helpers']:(staging/'Contents'/folder).mkdir(
 shutil.copy2(work/'85HAKeyboard',staging/'Contents/MacOS/85HAKeyboard')
 shutil.copy2(work/'85HAWriter',staging/'Contents/Helpers/85HAWriter')
 shutil.copy2(work/'85HAMacroWriter',staging/'Contents/Helpers/85HAMacroWriter')
-info=dict(CFBundleIdentifier=identifier,CFBundleName='85HA Keyboard',CFBundleDisplayName='85HA Keyboard',CFBundleExecutable='85HAKeyboard',CFBundlePackageType='APPL',CFBundleShortVersionString='0.1.0',CFBundleVersion='1',LSMinimumSystemVersion='13.0',NSHighResolutionCapable=True,NSPrincipalClass='NSApplication',NSHumanReadableCopyright='Local experimental editor for the 8BitDo 85HA. Not affiliated with 8BitDo.')
+info=dict(CFBundleIdentifier=identifier,CFBundleName='8BitDo 85HA Keyboard',CFBundleDisplayName='8BitDo 85HA Keyboard',CFBundleExecutable='85HAKeyboard',CFBundlePackageType='APPL',CFBundleShortVersionString='0.1.1',CFBundleVersion='2',LSMinimumSystemVersion='13.0',NSHighResolutionCapable=True,NSPrincipalClass='NSApplication',NSHumanReadableCopyright='Local experimental editor for the 8BitDo 85HA. Not affiliated with 8BitDo.')
 (staging/'Contents/Info.plist').write_bytes(plistlib.dumps(info))
 shutil.copy2(src/'DemoProfile.json',staging/'Contents/Resources/DemoProfile.json')
 shutil.copy2(here/'third_party/COPYING-libusb',staging/'Contents/Resources/COPYING-libusb')
